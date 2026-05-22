@@ -4,7 +4,8 @@ This is a PDP8 emulator written in C.
 
 ## Requirements
 
-- `gcc` or another C compiler (this project is made using `gcc`, another compiler may not compile)
+- `gcc` or another C compiler (this project is made using `gcc`, another compiler may not compile).
+- Unix system is require to use the build system. (If you are not on a unix-based machine you can compile the project by yourself).
 
 ## How to run the project
 
@@ -15,6 +16,7 @@ This is a PDP8 emulator written in C.
 ```
 git clone https://github.com/BudinoSurelySweet/pdp8_emulator_in_c.git
 cd pdp8_emulator_in_c
+mkdir build
 gcc build_system/main.c build_system/build_system.c -o builder
 ```
 
@@ -44,13 +46,19 @@ git clone https://github.com/BudinoSurelySweet/pdp8_emulator_in_c.git
 cd pdp8_emulator_in_c
 ```
 
-3. Create the builder file (the build system used)
+3. Create a `build` directory
+
+```
+mkdir build
+```
+
+4. Create the builder file (the build system used)
 
 ```
 gcc build_system/main.c build_system/build_system.c -o builder
 ```
 
-4. To compile the project run this command
+5. To compile the project run this command
 
 ```
 ./builder compile

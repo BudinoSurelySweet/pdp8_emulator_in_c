@@ -1,0 +1,16 @@
+		ORG 100
+        INP         / Leggi il numero di partenza N
+		ADD NUM_OF
+        STA N       / Salvalo in memoria
+LOOP,   LDA N       / Carica N in AC
+        SZA         / L'AC è zero? Se SI, salta la prossima istruzione
+        BUN STAMPA  / Se NO (AC != 0), salta all'etichetta STAMPA
+        HLT         / Fine del programma (viene eseguita solo se SZA ha saltato JMP)
+STAMPA, OUT         / Stampa il valore corrente di N
+        LDA N       / Ricarica N in AC (OUT potrebbe averlo alterato a seconda dell'implementazione)
+        ADD N_UNO     / Sottrai 1 all'AC
+        STA N       / Aggiorna la variabile N
+        BUN LOOP    / Torna all'inizio del ciclo
+N,      DEC 0       / Variabile per il contatore
+N_UNO, 	DEC -1      / Costante con valore 1
+NUM_OF, DEC -48

@@ -1,0 +1,11 @@
+			ORG 100     / Imposta l'indirizzo di partenza (es. 100)
+        	INP         / Attende il primo input e lo mette in AC
+			ADD NUM_OFFSET 
+        	STA A       / Salva AC nella variabile A
+        	INP         / Attende il secondo input e lo mette in AC
+			ADD NUM_OFFSET 
+        	ADD A       / Somma il valore della variabile A all'AC
+        	OUT         / Stampa il contenuto dell'AC
+        	HLT         / Ferma l'esecuzione
+A,      	DEC 0       / Dichiarazione variabile A (inizializzata a 0)
+NUM_OFFSET, DEC -48

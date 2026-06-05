@@ -133,7 +133,7 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 	{
 		ram[*line_num] = instruction_buffer.addr & 0x0FFF;
 		ram[*line_num] |= (word_t) instruction_buffer.opr << 12;
-		ram[*line_num] |= (word_t) instruction_buffer.i << 15; 
+		ram[*line_num] |= (word_t) instruction_buffer.i << 15;
 
 		memset(&instruction_buffer, 0, sizeof(Instruction));
 
@@ -264,7 +264,7 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 				}
 
 				break;
-			
+
 			case 'L':
 				if (second == 'D' && third == 'A') instruction_buffer.opr = LDA;
 				else ERROR("Token isn't an instruction: %s", token_buffer);
@@ -338,13 +338,20 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 	{
 		next_token = INSTRUCTION_OR_I;
 
-		// TEST: 
+		// TEST:
 		uint32_t value = 0;
-		hashmap_get_val(symbol_table, token_buffer, &value);
+		bool label_exists = hashmap_get_val(symbol_table, token_buffer, &value);
 
 		// printf("label: %s\nvalue: %d\n", token_buffer, value);
-		
-		instruction_buffer.addr = value + program_counter - 1;
+
+		if (label_exists)
+		{
+			instruction_buffer.addr = value + program_counter - 1;
+		}
+		else
+		{
+			instruction_buffer.addr = strtol(token_buffer, NULL, 16);
+		}
 	}
 	else if (is_dec_number)
 	{
@@ -370,7 +377,7 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 	{
 		ram[*line_num] = instruction_buffer.addr & 0x0FFF;
 		ram[*line_num] |= (word_t) instruction_buffer.opr << 12;
-		ram[*line_num] |= (word_t) instruction_buffer.i << 15; 
+		ram[*line_num] |= (word_t) instruction_buffer.i << 15;
 
 		memset(&instruction_buffer, 0, sizeof(Instruction));
 
@@ -471,4 +478,3 @@ uint16_t assemble_and_load(PDP8* cpu, const char* path)
 
 	return program_counter;
 }
-

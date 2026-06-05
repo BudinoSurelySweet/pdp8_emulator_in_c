@@ -93,13 +93,13 @@ bool hashmap_get_val(hashmap map, const char* key, uint32_t* outVal)
     struct hashmap_node* node = map[index];
 
     if (!node)
-        {printf("hashmap_get_val WARNING: no value with key %s\n", key); return false;}
+        {return false; printf("hashmap_get_val WARNING: no value with key %s\n", key); return false;}
 
     while (strcmp(node->key, key) != 0)
     {
         node = node->next;
         if (!node)
-            {printf("hashmap_get_val WARNING: no value with key %s\n", key); return false;}
+            {return false; printf("hashmap_get_val WARNING: no value with key %s\n", key); return false;}
     }
 
     *outVal = node->val;

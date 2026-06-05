@@ -58,13 +58,13 @@ void execute_cycle(PDP8* cpu)
 			case AND:
 				cpu->mbr = cpu->ram[cpu->mar];
 				cpu->accumulator &= cpu->mbr;
-				
+
 				break;
 
 			case ADD:
 				cpu->mbr = cpu->ram[cpu->mar];
 
-				uint32_t tmp = (uint32_t) cpu->accumulator + (uint32_t) cpu->mbr; 
+				uint32_t tmp = (uint32_t) cpu->accumulator + (uint32_t) cpu->mbr;
 
 				cpu->e = (tmp >> 16) & 0x1;
 				cpu->accumulator = tmp & 0xFFFF;

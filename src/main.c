@@ -17,39 +17,18 @@ int main(int argc, char** argv)
 	PDP8 cpu = {0};
 
 	ASSERT(argc > 1, "You need to pass a path");
-	assemble_and_load(&cpu, argv[1]);
+	cpu.pc = assemble_and_load(&cpu, argv[1]);
 
 	// TEST: Togliere queste righe qua sotto e mettere quelle sopra
 	// const char* PATH = "examples/program.pdp8";
 	// cpu.pc = assemble_and_load(&cpu, PATH);
 
-	// print_ram(cpu.ram, cpu.pc, cpu.pc + 10);
-
-	// TODO: 2. Insert file inside RAM
-
-	// cpu.ram[0x100] = MAKE_MRI_INSTRUCTION(0, LDA, 0x10a);
-	// cpu.ram[0x101] = OUT;
-	// cpu.ram[0x102] = CME;
-	// cpu.ram[0x103] = CIR;
-	// cpu.ram[0x104] = OUT;
-	// cpu.ram[0x105] = HLT;
+	// print_ram(cpu.ram, cpu.pc, cpu.pc + 20);
 	//
-	// cpu.ram[0x10a] = 83;
-
-	// cpu.ram[0x100] = MAKE_MRI_INSTRUCTION(0, LDA, 0x10a);
-	// cpu.ram[0x101] = OUT;
-	// cpu.ram[0x102] = MAKE_MRI_INSTRUCTION(0, BSA, 0x105);
-	// cpu.ram[0x103] = OUT;
-	// cpu.ram[0x104] = HLT;
-	// cpu.ram[0x105] = 0;
-	// cpu.ram[0x106] = MAKE_MRI_INSTRUCTION(0, LDA, 0x10b);
-	// cpu.ram[0x107] = MAKE_MRI_INSTRUCTION(1, BUN, 0x105);
-	//
-	// cpu.ram[0x10a] = 1;
-	// cpu.ram[0x10b] = 2;
+	// printf("\n\n");
 
 	cpu.s = 1;
-	
+
 	while (cpu.s)
 	{
 		if (cpu.f == 0 && cpu.r == 0)
@@ -62,7 +41,11 @@ int main(int argc, char** argv)
 		}
 		else if (cpu.f == 1 && cpu.r == 0)
 		{
+			printf("PC: %x\t\t", cpu.pc - 1);
+
 			execute_cycle(&cpu);
+
+			printf("AC: %016b\n", cpu.accumulator);
 		}
 		else
 		{
@@ -72,4 +55,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-

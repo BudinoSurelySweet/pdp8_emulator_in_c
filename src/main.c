@@ -24,8 +24,6 @@ int main(int argc, char** argv)
 	// cpu.pc = assemble_and_load(&cpu, PATH);
 
 	// print_ram(cpu.ram, cpu.pc, cpu.pc + 20);
-	//
-	// printf("\n\n");
 
 	cpu.s = 1;
 
@@ -45,7 +43,7 @@ int main(int argc, char** argv)
 
 			execute_cycle(&cpu);
 
-			printf("AC: %016b\n", cpu.accumulator);
+			printf("AC: %04b %04b %04b %04b\n", (cpu.accumulator & 0xF000) >> 12, (cpu.accumulator & 0x0F00) >> 8, (cpu.accumulator & 0x00F0) >> 4, cpu.accumulator & 0x000F);
 		}
 		else
 		{

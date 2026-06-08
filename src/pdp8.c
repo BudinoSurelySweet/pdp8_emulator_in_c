@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void print_ram(word_t* ram, uint16_t from, uint16_t to)
+void print_ram(word_t* ram, uint16_t from, uint16_t to, bool no_empty)
 {
 	PRE_CONDITION(from <= PDP8_MEMORY_SIZE, "`from` (%d | 0x%03X) is bigger than `PDP8_MEMORY_SIZE` (%d | 0x%03X)", from, from, PDP8_MEMORY_SIZE, PDP8_MEMORY_SIZE);
-	PRE_CONDITION(to <= PDP8_MEMORY_SIZE, "`to` (%d | 0x%03X) is bigger than `PDP8_MEMORY_SIZE` (%d | 0x%03X)", to, to, PDP8_MEMORY_SIZE, PDP8_MEMORY_SIZE);
-	PRE_CONDITION(from <= to, "`from` (%d | 0x%03X) is bigger than `to` (%d | 0x%03X)", from, from, to, to);
+	PRE_CONDITION(to < PDP8_MEMORY_SIZE, "`to` (%d | 0x%03X) is bigger than `PDP8_MEMORY_SIZE` (%d | 0x%03X)", to, to, PDP8_MEMORY_SIZE, PDP8_MEMORY_SIZE);
+	PRE_CONDITION(from <= to, "`from` (%d | 0x%03X) is equal or bigger than `to` (%d | 0x%03X)", from, from, to, to);
 
 	printf("Dec\t");
 	printf("Hex\t");
@@ -14,6 +14,8 @@ void print_ram(word_t* ram, uint16_t from, uint16_t to)
 
 	for (uint16_t i = from; i <= to; i++)
 	{
+		if (no_empty && !ram[i]) continue;
+
 		printf("%d\t", i);
 		printf("%X\t", i);
 
@@ -44,7 +46,7 @@ void indirection_cycle(PDP8* cpu)
 	cpu->r = 0;
 }
 
-void execute_cycle(PDP8* cpu)
+void execute_cycle(PDP8* cpu, bool peculiar_fmt)
 {
 	cpu->f = 0;
 
@@ -192,17 +194,29 @@ void execute_cycle(PDP8* cpu)
 			break;
 
 		case INP:
+			if (peculiar_fmt)
+				printf("\n\n");
+
+			printf("INP: ");
+
 			cpu->accumulator = getchar();
 
 			// Clean the stdin
 			while (getchar() != '\n' && !feof(stdin));
 
+			if (peculiar_fmt)
+				printf("\n\n");
+
 			break;
 
 		case OUT:
-			// TODO: Sostituire il printf con putchar
-			printf("%016b\n", cpu->accumulator);
-			// printf("%d\n", cpu->accumulator);
+			if (peculiar_fmt)
+				printf("\n\n");
+
+			printf("OUT: %d   0b%016b   0x%X\n", cpu->accumulator, cpu->accumulator, cpu->accumulator);
+
+			if (peculiar_fmt)
+				printf("\n\n");
 
 			break;
 	}

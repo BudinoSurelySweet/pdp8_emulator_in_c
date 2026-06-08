@@ -1,0 +1,38 @@
+		ORG 100			/ HOW TO USE: write the base into P2 and the esponent into P1
+		BSA POW
+		OUT
+		HLT
+M1,		DEC 0
+M2, 	DEC 0
+MUL,	DEC 0
+		CLA
+		LDA M1			/ Start inverting M1
+		CMA
+		INC
+		STA M1			/ M1 was inverted
+		CLA
+MLOOP,	ADD M2			/ Add M2 M1 times
+		ISZ M1
+		BUN MLOOP
+		BUN MUL I
+P1,		DEC 3
+P2,		DEC 14
+P3,		DEC 0
+POW,	DEC 0
+		LDA P2
+		STA P3
+		LDA P1			/ Start inverting P1
+		CMA
+		INC
+		INC
+		STA P1			/ P1 was inverted
+PLOOP,	LDA P2
+		STA M1
+		LDA P3
+		STA M2
+		BSA MUL
+		STA P3
+		ISZ P1
+		BUN PLOOP
+		BUN POW I
+	END

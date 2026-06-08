@@ -1,0 +1,18 @@
+	ORG 100
+A,		LDA X
+B,		STA R
+		ISZ A
+		ISZ B
+		ISZ CNT
+		BUN A
+		HLT
+CNT,	DEC -5
+	ORG 200
+X,		DEC 41
+		DEC 242
+		DEC 43
+		DEC -141
+		DEC -420
+	ORG 300
+R,		DEC 0
+	END

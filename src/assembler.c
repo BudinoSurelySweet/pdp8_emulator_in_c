@@ -1,5 +1,6 @@
 #include "pdp8.h"
 #include <assembler.h>
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -10,7 +11,11 @@
 
 #define TOKEN_CAPACITY 32
 
-static uint16_t program_counter = 0;
+#define STR_TO_HEX(num) strtol(num, NULL, 16)
+#define STR_TO_DEC(num) atoi(num)
+
+static int32_t program_counter = -1;
+static uint16_t curr_org_offset = 0;
 
 typedef struct
 {
@@ -34,7 +39,7 @@ typedef enum
 	INSTRUCTION_OR_I,
 	DECIMAL_NUMBER,
 	HEXADECIMAL_NUMBER,
-	START_OF_PROGRAM,
+	IS_ORG_FOUND,
 } NextToken;
 
 typedef struct
@@ -78,34 +83,6 @@ static inline void free_span(Span* span)
     span->size = 0;
 }
 
-// DEPRECATED: Remove this function 'cause it's unused
-static bool str_equal(const char* s1, const char* s2)
-{
-	return strcmp(s1, s2) == 0;
-}
-
-// TEST:
-// Rimuove i caratteri da 'start' fino a 'end' (escluso)
-void remove_substring(char *str, int start, int end) {
-    if (str == NULL) return;
-
-    int len = strlen(str);
-
-    // Controlli di sicurezza per evitare buffer overflow
-    if (start < 0) start = 0;
-    if (end > len) end = len;
-    if (start >= end) return; // Niente da rimuovere
-
-    // Calcoliamo quanti byte dobbiamo spostare.
-    // Il +1 è cruciale: serve a copiare anche il carattere terminatore '\0'
-    int bytes_to_move = len - end + 1;
-
-    // Sposta la memoria
-    // Destinazione: l'indirizzo da cui vogliamo iniziare a sovrascrivere (str + start)
-    // Origine: l'indirizzo del primo carattere da mantenere (str + end)
-    memmove(str + start, str + end, bytes_to_move);
-}
-
 static void fill_instruction(Instruction* instruction_buffer, uint16_t instruction)
 {
 	instruction_buffer->i = instruction >> 15;
@@ -115,7 +92,7 @@ static void fill_instruction(Instruction* instruction_buffer, uint16_t instructi
 	instruction_buffer->is_completed = true;
 }
 
-static void create_instruction(hashmap symbol_table, const char* token_buffer, word_t* ram, int32_t* line_num)
+static int create_instruction(hashmap symbol_table, const char* token_buffer, word_t* ram, int32_t* line_num)
 {
 	static NextToken next_token = INSTRUCTION;
 	static Instruction instruction_buffer = {0};
@@ -127,7 +104,8 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 	bool is_label = next_token == LABEL;
 	bool is_dec_number = next_token == DECIMAL_NUMBER;
 	bool is_hex_number = next_token == HEXADECIMAL_NUMBER;
-	bool is_start_of_program = next_token == START_OF_PROGRAM;
+	bool is_org_found = next_token == IS_ORG_FOUND;
+	bool close_pending_instruction = false; // Only setted to true from END
 
 	if (instruction_buffer.started && is_instruction)
 	{
@@ -218,7 +196,7 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 			case 'E':
 				if (second == 'N' && third == 'D')
 				{
-					UNIMPLEMENTED;
+					close_pending_instruction = true;
 				}
 				else ERROR("Token isn't an instruction: %s", token_buffer);
 
@@ -277,7 +255,7 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 			case 'O':
 				if (second == 'R' && third == 'G')
 				{
-					 next_token = START_OF_PROGRAM;
+					 next_token = IS_ORG_FOUND;
 				}
 				else if (second == 'U' && third == 'T')
 				{
@@ -338,42 +316,44 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 	{
 		next_token = INSTRUCTION_OR_I;
 
-		// TEST:
 		uint32_t value = 0;
 		bool label_exists = hashmap_get_val(symbol_table, token_buffer, &value);
 
-		// printf("label: %s\nvalue: %d\n", token_buffer, value);
-
 		if (label_exists)
 		{
-			instruction_buffer.addr = value + program_counter - 1;
+			instruction_buffer.addr = value;
 		}
 		else
 		{
-			instruction_buffer.addr = strtol(token_buffer, NULL, 16);
+			instruction_buffer.addr = STR_TO_HEX(token_buffer);
 		}
 	}
 	else if (is_dec_number)
 	{
 		next_token = INSTRUCTION;
 
-		fill_instruction(&instruction_buffer, (uint16_t) atoi(token_buffer));
+		fill_instruction(&instruction_buffer, (uint16_t) STR_TO_DEC(token_buffer));
 	}
 	else if (is_hex_number)
 	{
 		next_token = INSTRUCTION;
 
-		fill_instruction(&instruction_buffer, (uint16_t) strtol(token_buffer, NULL, 16));
+		fill_instruction(&instruction_buffer, (uint16_t) STR_TO_HEX(token_buffer));
 	}
-	else if (is_start_of_program)
+	else if (is_org_found)
 	{
 		next_token = INSTRUCTION;
 
-		program_counter = (uint16_t) strtol(token_buffer, NULL, 16);
-		*line_num = program_counter;
+		curr_org_offset = (uint16_t) STR_TO_HEX(token_buffer);
+
+		if (program_counter == -1) {
+			program_counter = curr_org_offset;
+		}
+
+		*line_num = curr_org_offset;
 	}
 
-	if (instruction_buffer.is_completed)
+	if (instruction_buffer.is_completed || close_pending_instruction)
 	{
 		ram[*line_num] = instruction_buffer.addr & 0x0FFF;
 		ram[*line_num] |= (word_t) instruction_buffer.opr << 12;
@@ -383,6 +363,10 @@ static void create_instruction(hashmap symbol_table, const char* token_buffer, w
 
 		(*line_num)++;
 	}
+
+	if (close_pending_instruction) return -1;
+
+	return 0;
 }
 
 uint16_t assemble_and_load(PDP8* cpu, const char* path)
@@ -393,6 +377,7 @@ uint16_t assemble_and_load(PDP8* cpu, const char* path)
 	int32_t line_num = 0;
 	Token token_buffer = {0};
 	bool is_comment = false;
+	uint16_t current_program_counter = 0;
 
 	// Fetch labels
 	for (uint16_t i = 0; i < source_code.size; i++)
@@ -403,6 +388,35 @@ uint16_t assemble_and_load(PDP8* cpu, const char* path)
 
 		if (source_code.data[i - 1] == '\n' && c == '\n')
 			ERROR("You can't have a blank line. Blank line found at %d", line_num + 1);
+
+		// WARNING: Spaghetti code
+		// If ORG is found: set the offset for future labels
+		if (c == 'O' && source_code.data[i + 1] == 'R' && source_code.data[i + 2] == 'G')
+		{
+			char buff[16 + 1] = {0};
+			char len = 0;
+
+			for (int j = i + 3; j < source_code.size; j++)
+			{
+				char d = source_code.data[j];
+
+				if (len >= 16 || d == '\n') break;
+				else if (d == ' ' || d == '\t') continue;
+
+				if (isdigit(d))
+				{
+					buff[len] = d;
+					len++;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			line_num = 0;
+			current_program_counter = STR_TO_HEX(buff);
+		}
 
 		switch (c)
 		{
@@ -435,7 +449,9 @@ uint16_t assemble_and_load(PDP8* cpu, const char* path)
 
 				// TODO: Add rules to labels (no space, no number at the start, no symbol except underscore)
 
-				hashmap_set_val(symbol_table, label, line_num);
+				int32_t value = current_program_counter + line_num - 1;
+
+				hashmap_set_val(symbol_table, label, value);
 
 				// Remove the label to make easy for the second loop to fetch instructions
 				// remove_substring(source_code.data, possible_label_start_pos, possible_label_start_pos + size + 2);
@@ -468,8 +484,10 @@ uint16_t assemble_and_load(PDP8* cpu, const char* path)
 		}
 		else if (strlen(token_buffer.data) != 0)
 		{
-			create_instruction(symbol_table, token_buffer.data, cpu->ram, &line_num);
+			int res = create_instruction(symbol_table, token_buffer.data, cpu->ram, &line_num);
 			memset(&token_buffer, 0, sizeof(Token));
+
+			if (res == -1) break;
 		}
 	}
 

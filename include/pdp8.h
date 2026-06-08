@@ -87,13 +87,13 @@ typedef enum : uint16_t
 // `from` <= `MEMORY_SIZE`
 // `to` <= `MEMORY_SIZE`
 // `from` <= `to`
-void print_ram(word_t* ram, uint16_t from, uint16_t to);
+void print_ram(word_t* ram, uint16_t from, uint16_t to, bool no_empty);
 
 void fetch_cycle(PDP8* cpu);
 
 void indirection_cycle(PDP8* cpu);
 
-void execute_cycle(PDP8* cpu);
+void execute_cycle(PDP8* cpu, bool peculiar_fmt);
 
 void interrupt_cycle(PDP8* cpu);
 

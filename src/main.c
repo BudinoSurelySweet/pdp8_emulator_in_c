@@ -21,6 +21,18 @@ typedef struct
 	char* program_path;
 } Args;
 
+void show_help_menu()
+{
+	printf("A PDP8 emulator written in C.\n\n");
+	printf("\t-p <PATH>\t\t");
+	printf("Path of the file to execute\n");
+	printf("\t-a\t\t\t");
+	printf("Show the accumulator for every executed instruction\n");
+	printf("\t-r <FROM> <TO>\t\t");
+	printf("Show the ram from <FROM> to <TO>\n");
+	printf("\t-h\t\t\tShow this help menu\n");
+}
+
 int main(int argc, char** argv)
 {
 	PDP8 cpu = {0};
@@ -34,19 +46,29 @@ int main(int argc, char** argv)
 
 		if (flag[0] == '-')
 		{
-			if (flag[1] == 'p')
+			switch (flag[1])
 			{
-				args.program_path = param1;
-			}
-			else if (flag[1] == 'a')
-			{
-				args.show_accumulator = true;
-			}
-			else if (flag[1] == 'r')
-			{
-				args.show_ram = true;
-				args.show_ram_from = strtol(param1, NULL, 0);
-				args.show_ram_to = strtol(param2, NULL, 0);
+				case 'p':
+					args.program_path = param1;
+
+					break;
+
+				case 'a':
+					args.show_accumulator = true;
+
+					break;
+
+				case 'r':
+					args.show_ram = true;
+					args.show_ram_from = strtol(param1, NULL, 0);
+					args.show_ram_to = strtol(param2, NULL, 0);
+
+					break;
+
+				case 'h':
+					show_help_menu();
+
+					return 0;
 			}
 		}
 	}

@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 			if (args.show_accumulator)
 			{
 				printf("PC: %x\t\t", cpu.pc);
-				printf("AC: %04b %04b %04b %04b\n", (cpu.accumulator & 0xF000) >> 12, (cpu.accumulator & 0x0F00) >> 8, (cpu.accumulator & 0x00F0) >> 4, cpu.accumulator & 0x000F);
+				printf("AC: %d   \t0b%04b %04b %04b %04b\t0x%X\n", (int16_t) cpu.accumulator, (cpu.accumulator & 0xF000) >> 12, (cpu.accumulator & 0x0F00) >> 8, (cpu.accumulator & 0x00F0) >> 4, cpu.accumulator & 0x000F, cpu.accumulator);
 			}
 		}
 		else

@@ -8,6 +8,10 @@ This is a PDP8 emulator written in C.
 2. Compile the `src/` directory and include the `include/` directory with a C compiler.
 3. Run the executable with `-h` flag to see how to use it.
 
+## After the compilation
+
+- To execute a file write `./<executable_name> -p ./<path_to_executable>`
+
 ## Instruction set
 
 ```

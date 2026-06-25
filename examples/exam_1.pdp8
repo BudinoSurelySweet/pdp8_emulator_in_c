@@ -1,0 +1,17 @@
+ORG 190
+INIT, LDA X     / 1
+BSA Y           / 2
+CMA             /
+INC             /
+CIL             / 8
+ISZ X           / 9
+BUN INIT        /
+HLT             / 10
+Y, BUN X I      / 7
+ISZ Y           / 3
+ADD X           / 4
+CIR             / 5
+BUN Y           / 6
+X, HEX FFFF     /
+END
+

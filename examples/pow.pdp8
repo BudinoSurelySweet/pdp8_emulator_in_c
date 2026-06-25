@@ -15,8 +15,8 @@ MLOOP,	ADD M2			/ Add M2 M1 times
 		ISZ M1
 		BUN MLOOP
 		BUN MUL I
-P1,		DEC 3
-P2,		DEC 14
+P1,		DEC 12
+P2,		DEC 2
 P3,		DEC 0
 POW,	DEC 0
 		LDA P2

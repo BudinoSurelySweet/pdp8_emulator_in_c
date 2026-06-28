@@ -169,17 +169,17 @@ void execute_cycle(PDP8* cpu, bool peculiar_fmt)
 			break;
 
 		case SPA:
-			if (cpu->accumulator >= 0) cpu->pc++;
+			if ((int16_t) cpu->accumulator >= 0) cpu->pc++;
 
 			break;
 
 		case SNA:
-			if (cpu->accumulator < 0) cpu->pc++;
+			if ((int16_t) cpu->accumulator < 0) cpu->pc++;
 
 			break;
 
 		case SZA:
-			if (cpu->accumulator == 0) cpu->pc++;
+			if ((int16_t) cpu->accumulator == 0) cpu->pc++;
 
 			break;
 
